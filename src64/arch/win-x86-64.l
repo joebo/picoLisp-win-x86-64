@@ -1017,8 +1017,15 @@
 (de optimize (Lst))  #> (cnt . lst)
 
 ### Decoration ###
+
+
 (de prolog (File))
 
-(de epilog (File))
+(de epilog (File)
+    (prinst ".section .got$main,\"r\"")
+    (prinst ".global __imp_main")
+    (prinst "__imp_main:")
+    (prinst ".quad   main")
+    (prinst ".linkonce discard") )
 
 # vi:et:ts=3:sw=3
