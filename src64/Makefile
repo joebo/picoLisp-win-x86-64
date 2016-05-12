@@ -24,11 +24,16 @@ else
 					UNAME = SunOS
 					MACHINE = x86_64
 				else
-					UNAME = $(shell uname)
-					ifeq ($(MAKECMDGOALS), emu)
-						MACHINE = emu
+					ifeq ($(MAKECMDGOALS), x86-64.win)
+						UNAME = Windows
+						MACHINE = x86_64
 					else
-						MACHINE = $(shell uname -m)
+						UNAME = $(shell uname)
+						ifeq ($(MAKECMDGOALS), emu)
+							MACHINE = emu
+						else
+							MACHINE = $(shell uname -m)
+						endif
 					endif
 				endif
 			endif
@@ -86,6 +91,15 @@ else
 			LD-MAIN = -m64 -lc -lm -ldl -lsocket -lnsl
 			LD-SHARED = -m64 -shared
 			STRIP = strip
+		else
+			ifeq ($(UNAME), Windows)
+				OS = Linux
+				FMT = .s
+				SYS = .windows
+				ARCH = win-x86-64
+				CC = x86_64-nt64-midipix-gcc
+				AS = x86_64-nt64-midipix-as
+			endif
 		endif
 	endif
 endif
@@ -105,9 +119,13 @@ x86-64.linux: $(sFiles)
 ppc64.linux: $(sFiles)
 x86-64.freeBsd: $(sFiles)
 x86-64.sunOs: $(sFiles)
+x86-64.win: win
 emu: picolisp
 
 picolisp: $(bin)/picolisp $(lib)/ext $(lib)/ht
+
+win: $(ARCH)$(SYS).base.o
+	$(CC) -o picolisp.exe $(ARCH)$(SYS).base.o $(LD-MAIN)
 
 ### Link ###
 $(bin)/picolisp: $(ARCH)$(SYS).base.o
