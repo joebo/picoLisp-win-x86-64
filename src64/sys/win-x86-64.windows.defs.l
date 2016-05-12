@@ -129,7 +129,7 @@
 # Sockets
 (equ SOCK_STREAM 1)
 (equ SOCK_DGRAM 2)
-(equ AF_UNSPEC 0)
+(equ AF_UNSPEC 2) #cannot use AF_UNSPEC, so we make AF_INET
 (equ AF_UNIX 1)
 (equ AF_INET6 10)
 (equ SOL_SOCKET 1)
