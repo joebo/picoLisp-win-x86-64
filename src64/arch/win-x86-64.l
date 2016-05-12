@@ -1000,9 +1000,11 @@
 
 (asm initMain ()
    (prinst "xor" "%r12" "%r12")  # Init NULL register
-   (prinst "mov" "(%rsi)" "%r13")  # Get command in X
-   (prinst "lea" "8(%rsi)" "%r14")  # argument vector in Y
-   (prinst "lea" "-8(%rsi,%rdi,8)" "%r15") )  # pointer to last argument in Z
+   (prinst "push" "%rbp")
+   (prinst "mov" "(%rdx)" "%r13")  # Get command in X 
+   (prinst "lea" "8(%rdx)" "%r14")  # argument vector in Y RCX = 1, RDX = 2
+   (prinst "lea" "-8(%rdx,%rcx,8)" "%r15")   # pointer to last argument in Z
+)
 
 (asm initLib ())
 
