@@ -693,9 +693,13 @@
 
 # C-Calls
 (asm cc (Adr A Arg M)
+(when (member Adr '("fcntl"))
+      (prinst "push" "%rbx") #rbx needs to be preserved
+      (prinst "subq" "$32", "%rsp"))
+
    (unless (== 'cc (caar (seek '((L) (== (cadr L) *Statement)) *Program)))
       (prinst "mov" "%rdx" "%r12") )
-   (let Reg '("%rdi" "%rsi" "%rdx" "%rcx" "%r8" "%r9")
+   (let Reg '("%rcx" "%rdx" "%r8" "%r9", "%r9")
       (if (lst? Arg)
          (let Lea NIL
             (mapc
@@ -718,11 +722,19 @@
                            (prinst "pop" (pop 'Reg)) )
                         (T (prinst (if Lea "lea" "mov") Src (pop 'Reg))) )
                      (off Lea) ) )
-               (head 6 Arg)
-               (head 6 M) )
-            (prinst "push" "%rbp")
-            (prinst "mov" "%rsp" "%rbp")
-            (when (nth Arg 7)  # Maximally 6 args in registers
+               (head 5 Arg)
+               (head 5 M) )
+	    (if (member Adr '("select"))
+		(prog
+		 (prinst "sub" "$40" "%rsp")
+		 # (prinst "xor" "%r8" "%r8")
+		 (prinst "mov" "%r12" "32(%rsp)") ) # C is the last parameter, and was temp stored in r12
+	    (if (member Adr '("getaddrinfo"))
+		 (prinst "mov" "%rsp" "%r9") )
+		 
+	      (prinst "push" "%rbp")
+	      (prinst "mov" "%rsp" "%rbp") )
+            (and NIL (when (nth Arg 5)  # Maximally 6 args in registers
                (prinst "sub" (pack "$" (* 8 (length @))) "%rsp") )
             (prinst "andb" "$~15" "%spl")  # Align stack
             (let Ofs 0
@@ -743,9 +755,9 @@
                         (prinst "movq" "%rax" (pack Ofs "(%rsp)")) )
                      (inc 'Ofs 8) )
                   (nth Arg 7)
-                  (nth M 7) ) )
+                  (nth M 7) ) ) )
             # Don't use SSE registers in varargs for static calls
-            (when (member Adr '("printf" "fprintf" "snprintf" "open" "fcntl"))
+            (when (member Adr '("printf" "fprintf" "snprintf" "open"))
                (prinst "xor" "%al" "%al") ) )
          (prinst "mov" "%rsp" "%rax")     # A on arguments
          (prinst "push" "%rbp")           # Link
@@ -829,12 +841,27 @@
          (prinl "9:")
          # Maximally 6 SSE registers in varargs for dynamic calls
          (prinst "mov" "$6" "%al") ) )
-   ((get 'call 'asm) Adr A)
-   (prinst "mov" "%rbp" "%rsp")
-   (prinst "pop" "%rbp")
+(when (not  (member Adr '("select")))
+# stack gets clobbered
+      (prinst "subq" "$32", "%rsp"))
+
+   (let AdrSwap (car (replace (list Adr) "strdup" "__strdup"))
+	((get 'call 'asm) AdrSwap A) )
+
+(when (not (member Adr '("select")))
+      (prinst "addq" "$32", "%rsp"))
+
+(unless (member Adr '("select"))
+  (prinst "mov" "%rbp" "%rsp")
+  (prinst "pop" "%rbp") )
    (unless (== 'cc (caadr (memq *Statement *Program)))
       (prinst "mov" "%r12" "%rdx")
-      (prinst "xor" "%r12" "%r12") ) )
+      (prinst "xor" "%r12" "%r12") ) 
+(when (member Adr '("fcntl"))
+      (prinst "pop" "%rbx")
+      (prinst "addq" "$32", "%rsp"))
+
+)
 
 (asm func ())
 
