@@ -693,10 +693,6 @@
 
 # C-Calls
 (asm cc (Adr A Arg M)
-(when (member Adr '("fcntl"))
-      (prinst "push" "%rbx") #rbx needs to be preserved
-      (prinst "subq" "$32", "%rsp"))
-
    (unless (== 'cc (caar (seek '((L) (== (cadr L) *Statement)) *Program)))
       (prinst "mov" "%rdx" "%r12") )
    (let Reg '("%rcx" "%rdx" "%r8" "%r9", "%r9")
@@ -851,16 +847,15 @@
 (when (not (member Adr '("select")))
       (prinst "addq" "$32", "%rsp"))
 
+(when (member Adr '("select"))
+      (prinst "addq" "$40", "%rsp"))
+
 (unless (member Adr '("select"))
   (prinst "mov" "%rbp" "%rsp")
   (prinst "pop" "%rbp") )
    (unless (== 'cc (caadr (memq *Statement *Program)))
       (prinst "mov" "%r12" "%rdx")
       (prinst "xor" "%r12" "%r12") ) 
-(when (member Adr '("fcntl"))
-      (prinst "pop" "%rbx")
-      (prinst "addq" "$32", "%rsp"))
-
 )
 
 (asm func ())
