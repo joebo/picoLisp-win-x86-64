@@ -3474,7 +3474,8 @@
       nul4  # OK?
       jnz pipeErrX
       ld4 (SpMiPipe)  # Read end
-      ld (Spkr) A  # into the speaker
+      # joebo - no Spkr for now as it causes problems with select
+      # ld (Spkr) A  # into the speaker
       call closeOnExecAX
       ld4 (SpMiPipe 4)  # Write end
       call closeOnExecAX
