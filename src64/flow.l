@@ -3456,14 +3456,31 @@
 (code 'doFork 2)
    push X
    ld X E  # Get expression
-   call forkLispX_FE  # Fork child process
+   ld C (E CDR)
+   atom C
+   if z
+       call forkLispNoPipeX_FE
+   else
+       call forkLispX_FE  # Fork child process
+   end
    if lt
       ld E Nil  # In child
    else
       shl E 4  # In parent
       or E CNT  # Return PID
    end
+
    pop X
+   ret
+
+(code 'forkLispNoPipeX_FE 0)
+   cc fork()  # Fork child process
+   nul4  # In child?
+   if z  # Yes
+      lt  # Return "in child"
+   else
+      eq  # Return "in parent"
+   end
    ret
 
 (code 'forkLispX_FE 0)
@@ -3474,7 +3491,7 @@
       nul4  # OK?
       jnz pipeErrX
       ld4 (SpMiPipe)  # Read end
-      # joebo - no Spkr for now as it causes problems with select
+      # joebo - no Spkr for now as it causes problem with select
       # ld (Spkr) A  # into the speaker
       call closeOnExecAX
       ld4 (SpMiPipe 4)  # Write end
