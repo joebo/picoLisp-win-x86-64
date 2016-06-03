@@ -25,7 +25,7 @@
    call closeOnExecAX
    ld A 0  # Socket option "off"
    st4 (Buf)  # Store into 'optval'
-   cc setsockopt(C IPPROTO_IPV6 IPV6_V6ONLY Buf 4)  # "Not only IPv6" option
+   # cc setsockopt(C IPPROTO_IPV6 IPV6_V6ONLY Buf 4)  # "Not only IPv6" option
    nul4  # OK?
    js ipV6onlyErrX  # No
    ld B 0  # Clear socket structure
@@ -40,7 +40,7 @@
       if nz  # No
          ld A 1  # Socket option "on"
          st4 (Buf)  # Store into 'optval'
-         cc setsockopt(C SOL_SOCKET SO_REUSEADDR Buf 4)  # "Reuse socket" option
+         # cc setsockopt(C SOL_SOCKET SO_REUSEADDR Buf 4)  # "Reuse socket" option
          nul4  # OK?
          js ipReuseaddrErrX  # No
       end
