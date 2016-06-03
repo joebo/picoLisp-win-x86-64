@@ -519,6 +519,14 @@
          (prinst "mov" (target Adr T) "%r10")
          (prinst "jmp" "*%r10") ) ) )
 
+
+(asm tos (Dst D)
+   (setq Dst (dst Dst D))
+   (if (pre? "%" Dst)
+      (prinst "pop" Dst)
+      (prinst "popq" Dst) ) )
+
+
 (asm jump (Reg)
    (prinst "jmp" (pack "*" Reg)) )
 
@@ -841,7 +849,7 @@
 # stack gets clobbered
       (prinst "subq" "$32", "%rsp"))
 
-(unless (member Adr '("fcntl" "setpgid"))
+(unless (member Adr '("fcntl" "setpgid" "setsockopt"))
    (let AdrSwap (car (replace (list Adr) "strdup" "__strdup", "sigaction", "__sigaction"))
 	((get 'call 'asm) AdrSwap A) ) )
 
