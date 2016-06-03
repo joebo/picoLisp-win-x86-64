@@ -841,8 +841,9 @@
 # stack gets clobbered
       (prinst "subq" "$32", "%rsp"))
 
+(unless (member Adr '("fcntl" "setpgid"))
    (let AdrSwap (car (replace (list Adr) "strdup" "__strdup", "sigaction", "__sigaction"))
-	((get 'call 'asm) AdrSwap A) )
+	((get 'call 'asm) AdrSwap A) ) )
 
 (when (not (member Adr '("select")))
       (prinst "addq" "$32", "%rsp"))
