@@ -14,6 +14,7 @@
    ld E (Dbg)  # Print item
    call printE_E
    call newline  # and a newline
+   call flushAll
    pop (PutB)  # Restore 'put'
    pop (OutFile)  # and output channel
    pop E
