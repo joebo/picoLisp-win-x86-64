@@ -1,4 +1,4 @@
-# 21feb16abu
+# 27may16abu
 # (c) Software Lab. Alexander Burger
 
 (code 'redefMsgEC)
@@ -811,12 +811,12 @@
          atom A  # Any?
          jnz ret  # Return 'nz'
       loop
+      cmp S (StkLimit)  # Stack check
+      jlt stkErr
       do
          ld Z A  # Set class list
          ld E (A)  # Class symbol
          push A
-         cmp S (StkLimit)  # Stack check
-         jlt stkErr
          call methodEY_FCYZ  # Found method definition?
          pop A
          jeq ret  # 'z'
@@ -1025,6 +1025,8 @@
       jnz ret  # Return NO
       atom (X)  # Next item atomic?
       if nz  # Yes
+         cmp S (StkLimit)  # Stack check
+         jlt stkErr
          do
             num (X)  # Numeric?
             jnz ret  # Return NO
@@ -1036,8 +1038,6 @@
             push E  # object
             push X  # and list
             ld E (X)  # Recurse
-            cmp S (StkLimit)  # Stack check
-            jlt stkErr
             call isaCE_F  # Match?
             pop X
             pop E
@@ -1317,10 +1317,10 @@
          until eq  # Return 'eq'
          ret
       end
-      push X
-      ld X (X)  # Recurse on superclass
       cmp S (StkLimit)  # Stack check
       jlt stkErr
+      push X
+      ld X (X)  # Recurse on superclass
       call extraXY_FCYZ  # Found?
       pop X
       jeq ret  # Yes
@@ -2288,20 +2288,23 @@
    cmp E Nil  # Ever?
    if ne  # Yes
       cnt E  # Short number?
-      jz loopX  # No: Non-NIL 'flg'
-      shr E 4  # Normalize
-      if nz
-         jx 10  # Greater zero
-         push E  # <S> Count
-         do
-            ld Y X  # Loop body
-            call loopY_FE
-         while nz
-            dec (S)  # Decrement count
-         until z
-         add S I  # Drop count
+      if z
+         call loopX  # No: Non-NIL 'flg'
       else
-10       ld E Nil  # Return NIL if zero
+         shr E 4  # Normalize
+         if nz
+            jx 10  # Greater zero
+            push E  # <S> Count
+            do
+               ld Y X  # Loop body
+               call loopY_FE
+            while nz
+               dec (S)  # Decrement count
+            until z
+            add S I  # Drop count
+         else
+10          ld E Nil  # Return NIL if zero
+         end
       end
    end
    pop Z
@@ -2315,7 +2318,13 @@
    push Y
    push Z
    ld X (E CDR)  # Body
-: loopX
+   call loopX
+   pop Z
+   pop Y
+   pop X
+   ret
+
+(code 'loopX 0)
    do
       ld Y X  # Body in Y
       do
@@ -2332,9 +2341,6 @@
                if eq  # Yes
                   ld Y (Z CDR)  # Run sub-body
                   prog Y
-                  pop Z
-                  pop Y
-                  pop X
                   ret
                end
                ld (At) E
@@ -2349,9 +2355,6 @@
                      ld (At) E
                      ld Y (Z CDR)  # Run sub-body
                      prog Y
-                     pop Z
-                     pop Y
-                     pop X
                      ret
                   end
                else
@@ -2621,7 +2624,6 @@
    ld (Catch) S  # Close catch frame
    ld X (X CDR)  # Run body
    prog X
-: caught
    pop (Catch)  # Restore catch link
    add S (pack II "+(EnvEnd-Env)")  # Clean up
    pop L
@@ -2654,7 +2656,13 @@
    call unwindC_Z  # Unwind environments
    pop E
    ld S Z  # Restore stack
-   jmp caught  # Return E
+   pop (Catch)  # Restore catch link
+   add S (pack II "+(EnvEnd-Env)")  # Clean up
+   pop L
+   pop Z
+   pop Y
+   pop X
+   throw
 
 (code 'throwErrZX)
    ld E Z
@@ -3263,7 +3271,7 @@
    ret
 
 (code 'execArgsE_SXZ)  # Y
-   pop Y  # Get return entry
+   tos Y  # Get return entry
    ld X (E CDR)  # X on args
    push 0  # End-of-buffers marker
    call evSymX_E  # Pathname
@@ -3287,7 +3295,7 @@
       null (X)  # Done?
    until z  # Yes
    call flushAll  # Flush all output channels
-   jump Y  # Return
+   jmp (Y)  # Return
 
 # (exec 'any ..)
 (code 'doExec 2)
@@ -3456,30 +3464,34 @@
 (code 'doFork 2)
    push X
    ld X E  # Get expression
-   ld C (E CDR)
-   atom C
-   if z
-       call forkLispNoPipeX_FE
-   else
-       call forkLispX_FE  # Fork child process
-   end
+   call forkLispX_FE  # Fork child process
    if lt
       ld E Nil  # In child
    else
       shl E 4  # In parent
       or E CNT  # Return PID
    end
-
    pop X
    ret
 
-(code 'forkLispNoPipeX_FE 0)
-   cc fork()  # Fork child process
-   nul4  # In child?
-   if z  # Yes
-      lt  # Return "in child"
-   else
-      eq  # Return "in parent"
+# (detach) -> pid | NIL
+(code 'doDetach 2)
+   ld E (PPid)  # Get parent process ID
+   cmp E Nil  # Any?
+   if ne  # Yes
+      ld (PPid) Nil  # Clear parent process ID
+      cc close((Tell))  # Close 'Tell'
+      ld (Tell) 0
+      cc close((Hear))  # Close 'Hear'
+      ld A (Hear)
+      call closeInFileA
+      ld A (Hear)
+      call closeOutFileA
+      ld (Hear) 0
+      cc close((Mic))  # Close 'Mic'
+      ld (Mic) 0
+      ld (Slot) 0  # Clear 'Slot'
+      cc setsid()  # New session
    end
    ret
 
@@ -3491,8 +3503,7 @@
       nul4  # OK?
       jnz pipeErrX
       ld4 (SpMiPipe)  # Read end
-      # joebo - no Spkr for now as it causes problem with select
-      # ld (Spkr) A  # into the speaker
+      ld (Spkr) A  # into the speaker
       call closeOnExecAX
       ld4 (SpMiPipe 4)  # Write end
       call closeOnExecAX

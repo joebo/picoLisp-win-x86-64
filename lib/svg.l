@@ -1,4 +1,4 @@
-# 01mar16abu
+# 16mar16abu
 # (c) Software Lab. Alexander Burger
 
 # *Unit *DX *DY *Pos *Page *StrokeWidth
@@ -85,9 +85,9 @@
    (for L Lst
       (prin
          "@font-face {font-family: '" (car L)
-         "'; src: url('" (sesId (cadr L)) "')" )
+         "'; src: url('" (srcUrl (cadr L)) "')" )
       (for S (cddr L)
-         (prin ", url('" (sesId S) "')") )
+         (prin ", url('" (srcUrl S) "')") )
       (prinl "}") )
    (prinl "</style>") )
 

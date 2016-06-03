@@ -1,4 +1,4 @@
-# 16nov15abu
+# 23mar16abu
 # (c) Software Lab. Alexander Burger
 
 bin = ../bin
@@ -20,12 +20,12 @@ else
 				UNAME = FreeBSD
 				MACHINE = x86_64
 			else
-				ifeq ($(MAKECMDGOALS), x86-64.sunOs)
-					UNAME = SunOS
+				ifeq ($(MAKECMDGOALS), x86-64.openBsd)
+					UNAME = OpenBSD
 					MACHINE = x86_64
 				else
-					ifeq ($(MAKECMDGOALS), x86-64.win)
-						UNAME = Windows
+					ifeq ($(MAKECMDGOALS), x86-64.sunOs)
+						UNAME = SunOS
 						MACHINE = x86_64
 					else
 						UNAME = $(shell uname)
@@ -82,23 +82,25 @@ else
 		LD-SHARED = -shared -rdynamic
 		STRIP = strip
 	else
-		ifeq ($(UNAME), SunOS)
-			OS = SunOS
-			SYS = .sunOs
+		ifeq ($(UNAME), OpenBSD)
+			OS = OpenBSD
+			SYS = .openBsd
 			FMT = .s
 			ARCH = x86-64
-			AS = gas --64
-			LD-MAIN = -m64 -lc -lm -ldl -lsocket -lnsl
-			LD-SHARED = -m64 -shared
+			AS = as
+			LD-MAIN = -Wl,-nopie -rdynamic -lc -lm
+			LD-SHARED = -shared -rdynamic
 			STRIP = strip
 		else
-			ifeq ($(UNAME), Windows)
-				OS = Linux
+			ifeq ($(UNAME), SunOS)
+				OS = SunOS
+				SYS = .sunOs
 				FMT = .s
-				SYS = .windows
-				ARCH = win-x86-64
-				CC = x86_64-nt64-midipix-gcc
-				AS = x86_64-nt64-midipix-as
+				ARCH = x86-64
+				AS = gas --64
+				LD-MAIN = -m64 -lc -lm -ldl -lsocket -lnsl
+				LD-SHARED = -m64 -shared
+				STRIP = strip
 			endif
 		endif
 	endif
@@ -118,14 +120,11 @@ arm64.linux: $(sFiles)
 x86-64.linux: $(sFiles)
 ppc64.linux: $(sFiles)
 x86-64.freeBsd: $(sFiles)
+x86-64.openBsd: $(sFiles)
 x86-64.sunOs: $(sFiles)
-x86-64.win: win
 emu: picolisp
 
 picolisp: $(bin)/picolisp $(lib)/ext $(lib)/ht
-
-win: $(ARCH)$(SYS).base.o
-	$(CC) -o picolisp.exe $(ARCH)$(SYS).base.o $(LD-MAIN)
 
 ### Link ###
 $(bin)/picolisp: $(ARCH)$(SYS).base.o

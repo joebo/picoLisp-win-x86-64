@@ -1,4 +1,4 @@
-# 02nov15abu
+# 27may16abu
 # (c) Software Lab. Alexander Burger
 
 # Debug print routine
@@ -14,7 +14,6 @@
    ld E (Dbg)  # Print item
    call printE_E
    call newline  # and a newline
-   call flushAll
    pop (PutB)  # Restore 'put'
    pop (OutFile)  # and output channel
    pop E
@@ -77,7 +76,13 @@
                   call unwindC_Z  # Unwind environments
                   pop E  # Return tag list element from 'catch'
                   ld S Z  # Restore stack
-                  jmp caught
+                  pop (Catch)  # Restore catch link
+                  add S (pack II "+(EnvEnd-Env)")  # Clean up
+                  pop L
+                  pop Z
+                  pop Y
+                  pop X
+                  throw
                end
                ld Y (Y CDR)  # Tag list
             loop

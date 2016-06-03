@@ -1,4 +1,4 @@
-# 21feb16abu
+# 16mar16abu
 # (c) Software Lab. Alexander Burger
 
 (data 'Data)
@@ -309,6 +309,7 @@
    initFun NIL       "opid"      doOpid
    initFun NIL       "kill"      doKill
    initFun NIL       "fork"      doFork
+   initFun NIL       "detach"    doDetach
    initFun NIL       "bye"       doBye
 
    # Symbol functions
