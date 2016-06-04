@@ -109,7 +109,7 @@ else
 				STRIP = strip
 			else
 				ifeq ($(UNAME), Windows)
-					OS = Linux
+					OS = Windows
 					FMT = .s
 					SYS = .windows
 					ARCH = win-x86-64
@@ -123,6 +123,11 @@ endif
 
 baseFiles = version.l glob.l main.l \
 	gc.l apply.l flow.l sym.l subr.l big.l io.l db.l net.l err.l
+
+
+ifeq ($(UNAME), Windows)
+baseFiles += ext.l ht.l
+endif
 
 sFiles = \
 	$(ARCH)$(SYS).base$(FMT) \

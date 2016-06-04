@@ -568,6 +568,17 @@
    initFun NIL       "connect"   doConnect
    initFun NIL       "udp"       doUdp
 
+   ? (= *TargetOS "Windows")
+   initFun NIL       "ext:Base64" Base64
+   initFun NIL       "ht:Pack"    Pack
+   initFun NIL       "ht:In"      In
+   initFun NIL       "ht:Out"     Out
+   initFun NIL       "ht:Fmt"     Fmt
+   initFun NIL       "ht:Prin"    Prin
+   initFun NIL       "ht:Read"    Read
+   initFun NIL       "ext:Snx"    Snx
+
+   =
 : SymTabEnd
 
 # Transient symbols

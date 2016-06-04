@@ -976,8 +976,9 @@
 # System
 (asm initData ())
 
+(off *InitCodeCalled)
 (asm initCode ()
-   (unless *FPic
+   (unless (or *FPic *InitCodeCalled)
       (label "begin")
       (prinst "pop" "%r10")         # Get return address
       (prinst "push" "%r15")        # Z
@@ -1000,7 +1001,8 @@
       (prinst "pop" "%r13")
       (prinst "pop" "%r14")
       (prinst "pop" "%r15")
-      (prinst "ret") ) )
+      (prinst "ret") ) 
+      (on *InitCodeCalled) )
 
 (asm initMain ()
    (prinst "xor" "%r12" "%r12")  # Init NULL register
