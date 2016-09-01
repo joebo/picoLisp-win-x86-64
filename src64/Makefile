@@ -147,8 +147,11 @@ x86-64.win: win
 
 picolisp: $(bin)/picolisp $(lib)/ext $(lib)/ht
 
+### this will build on midixpix for linux
+### to build support for native, gcc -c win-x86-64-native_shim.c on msys2 and link with native midipix gcc
+### gcc -o picolisp.exe win-x86-64.windows.base.s native_shim.o //c/mingw64/x86_64-w64-mingw32/lib/libkernel32.a
 win: $(ARCH)$(SYS).base.o		
-	$(CC) -o picolisp.exe $(ARCH)$(SYS).base.o $(LD-MAIN)		
+	$(CC) -o picolisp.exe $(ARCH)$(SYS).base.s arch/win-x86-64-native_shim.c $(LD-MAIN)		
  
 ### Link ###
 $(bin)/picolisp: $(ARCH)$(SYS).base.o
