@@ -1018,6 +1018,9 @@
 (asm initLib ())
 
 (asm stop ()
+   # add minor sleep since midipix may not be blocking on writes
+   (prinst "mov" "$10000" "%rcx")
+   (prinst "call usleep")
    (prinst "mov" "%rbx" "%rdi")  # Return 'E'
    (prinst "jmp" "exit") )
 
