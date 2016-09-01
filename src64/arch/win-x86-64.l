@@ -853,8 +853,8 @@
    (let AdrSwap (car (replace (list Adr) "strdup" "__strdup" "sigaction" "__sigaction" "dlopen" "mydlopen" "dlsym" "mydlsym" "malloc" "*__imp_malloc(%rip)"))
 	((get 'call 'asm) AdrSwap A) ) )
 
-(when (= (car Adr) "isatty")
-      (prinst "mov" "$1" "$rax"))
+(when (member Adr '("isatty"))
+      (prinst "mov" "$1" "%rax"))
 
 (when (not (member Adr '("select")))
       (prinst "addq" "$32", "%rsp"))
