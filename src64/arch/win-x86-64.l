@@ -850,7 +850,7 @@
       (prinst "subq" "$32", "%rsp"))
 
 (unless (member Adr '("fcntl" "setpgid" "setsockopt" "isatty"))
-   (let AdrSwap (car (replace (list Adr) "strdup" "__strdup", "sigaction", "__sigaction"))
+   (let AdrSwap (car (replace (list Adr) "strdup" "__strdup" "sigaction" "__sigaction" "dlopen" "mydlopen" "dlsym" "mydlsym" "malloc" "*__imp_malloc(%rip)"))
 	((get 'call 'asm) AdrSwap A) ) )
 
 (when (= (car Adr) "isatty")
